@@ -1,0 +1,37 @@
+#!/bin/bash
+
+if [ -z $1 ]; then
+        # No version number
+        echo "Usage: <version number: e.g., 1.19.4>"
+        exit 1
+fi
+
+VER=$1
+PROG="busybox"
+PROG_DIR="$DIRECT_SYM_ROOT/apps/$PROG"
+
+cd $PROG_DIR
+rm -rf *.bc
+rm -rf $PROG-$VER
+tar jxvf $APPS_DIR/sys/$PROG-$VER.tar.bz2
+tar zxvf busybox-update.patch.tar.gz
+cd $PROG-$VER
+patch -p1 < ../fix-atexit.patch
+patch -p1 < ../busybox-update.patch
+#exit 0;
+chmod +x mk-busybox
+./mk-busybox all
+#echo "************************"
+#echo "   Usage: cd busybox-ver"
+#echo "   Usage: ./mk-busybox"
+#echo "************************"
+
+# Link those bc with some uclibc libraries and pass them to KLEE optimization passes.
+cd $DIRECT_SYM_ROOT/apps/busybox
+ALLBC=`ls *.bc`
+for BC in $ALLBC
+do
+  echo "Optimizing $BC..."
+  $DIRECT_SYM_ROOT/apps/busybox/link-libs.sh $BC
+  $DIRECT_SYM_ROOT/common-scripts/klee-opt.sh $BC
+done

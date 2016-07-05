@@ -1,0 +1,31 @@
+diff -ruN git-1.7.9.4-orig/git-compat-util.h git-1.7.9.4-modified/git-compat-util.h
+--- git-1.7.9.4-orig/git-compat-util.h	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/git-compat-util.h	2012-04-06 00:05:37.000000000 -0400
+@@ -427,12 +427,12 @@
+ extern try_to_free_t set_try_to_free_routine(try_to_free_t);
+ 
+ extern char *xstrdup(const char *str);
+-extern void *xmalloc(size_t size);
++#define xmalloc(s) malloc(s)
+ extern void *xmallocz(size_t size);
+ extern void *xmemdupz(const void *data, size_t len);
+ extern char *xstrndup(const char *str, size_t len);
+-extern void *xrealloc(void *ptr, size_t size);
+-extern void *xcalloc(size_t nmemb, size_t size);
++#define xrealloc(ptr,s) realloc(ptr,s)
++#define xcalloc(num,s) calloc(num,s)
+ extern void *xmmap(void *start, size_t length, int prot, int flags, int fd, off_t offset);
+ extern ssize_t xread(int fd, void *buf, size_t len);
+ extern ssize_t xwrite(int fd, const void *buf, size_t len);
+diff -ruN git-1.7.9.4-orig/kwset.c git-1.7.9.4-modified/kwset.c
+--- git-1.7.9.4-orig/kwset.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/kwset.c	2012-04-06 00:05:57.000000000 -0400
+@@ -40,7 +40,7 @@
+ #include "compat/obstack.h"
+ 
+ #define NCHAR (UCHAR_MAX + 1)
+-#define obstack_chunk_alloc xmalloc
++#define obstack_chunk_alloc malloc
+ #define obstack_chunk_free free
+ 
+ #define U(c) ((unsigned char) (c))

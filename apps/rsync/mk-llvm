@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if [ -z $1 ]; then
+        # No version number
+        echo "Usage: <version number: e.g., 3.0.9>"
+        exit 1
+fi
+
+VER=$1
+cd $DIRECT_SYM_ROOT/apps/rsync
+rm *.bc *.ll
+rm -rf $DIRECT_SYM_ROOT/apps/rsync/rsync-$VER
+tar zxvf $APPS_DIR/sys/rsync-$VER.tar.gz
+cd rsync-$VER
+./configure --with-included-popt CC=llgcc CXX=llg++ LD=llvm-ld AR=llvm-ar AS=llvm-as RANLIB=llvm-ranlib
+make
+
+# Link those bc with some uclibc libraries and pass them to KLEE optimization passes.
+cp $DIRECT_SYM_ROOT/apps/rsync/rsync-$VER/rsync.bc $DIRECT_SYM_ROOT/apps/rsync/
+cd $DIRECT_SYM_ROOT/apps/rsync/
+echo "Optimizing rsync.bc..."
+$DIRECT_SYM_ROOT/common-scripts/klee-opt.sh rsync.bc
+$DIRECT_SYM_ROOT/apps/rsync/link-libs.sh rsync.bc
+$DIRECT_SYM_ROOT/common-scripts/klee-opt.sh rsync.bc
+
+

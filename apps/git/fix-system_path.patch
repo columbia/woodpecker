@@ -1,0 +1,118 @@
+diff -ruN git-1.7.9.4-orig/attr.c git-1.7.9.4-modified/attr.c
+--- git-1.7.9.4-orig/attr.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/attr.c	2012-04-02 22:32:35.000000000 -0400
+@@ -485,7 +485,7 @@
+ {
+ 	static const char *system_wide;
+ 	if (!system_wide)
+-		system_wide = system_path(ETC_GITATTRIBUTES);
++		system_wide = git_system_path(ETC_GITATTRIBUTES);
+ 	return system_wide;
+ }
+ 
+diff -ruN git-1.7.9.4-orig/builtin/help.c git-1.7.9.4-modified/builtin/help.c
+--- git-1.7.9.4-orig/builtin/help.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/builtin/help.c	2012-04-02 22:32:34.000000000 -0400
+@@ -325,7 +325,7 @@
+ 	 * old_path, the ':' at the end will let 'man' to try
+ 	 * system-wide paths after ours to find the manual page. If
+ 	 * there is old_path, we need ':' as delimiter. */
+-	strbuf_addstr(&new_path, system_path(GIT_MAN_PATH));
++	strbuf_addstr(&new_path, git_system_path(GIT_MAN_PATH));
+ 	strbuf_addch(&new_path, ':');
+ 	if (old_path)
+ 		strbuf_addstr(&new_path, old_path);
+@@ -371,7 +371,7 @@
+ static void show_info_page(const char *git_cmd)
+ {
+ 	const char *page = cmd_to_page(git_cmd);
+-	setenv("INFOPATH", system_path(GIT_INFO_PATH), 1);
++	setenv("INFOPATH", git_system_path(GIT_INFO_PATH), 1);
+ 	execlp("info", "info", "gitman", page, (char *)NULL);
+ 	die("no info viewer handled the request");
+ }
+@@ -379,7 +379,7 @@
+ static void get_html_page_path(struct strbuf *page_path, const char *page)
+ {
+ 	struct stat st;
+-	const char *html_path = system_path(GIT_HTML_PATH);
++	const char *html_path = git_system_path(GIT_HTML_PATH);
+ 
+ 	/* Check that we have a git documentation directory. */
+ 	if (stat(mkpath("%s/git.html", html_path), &st)
+diff -ruN git-1.7.9.4-orig/builtin/init-db.c git-1.7.9.4-modified/builtin/init-db.c
+--- git-1.7.9.4-orig/builtin/init-db.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/builtin/init-db.c	2012-04-02 22:32:35.000000000 -0400
+@@ -125,7 +125,7 @@
+ 	if (!template_dir)
+ 		template_dir = init_db_template_dir;
+ 	if (!template_dir)
+-		template_dir = system_path(DEFAULT_GIT_TEMPLATE_DIR);
++		template_dir = git_system_path(DEFAULT_GIT_TEMPLATE_DIR);
+ 	if (!template_dir[0])
+ 		return;
+ 	template_len = strlen(template_dir);
+diff -ruN git-1.7.9.4-orig/config.c git-1.7.9.4-modified/config.c
+--- git-1.7.9.4-orig/config.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/config.c	2012-04-02 22:32:34.000000000 -0400
+@@ -859,7 +859,7 @@
+ {
+ 	static const char *system_wide;
+ 	if (!system_wide)
+-		system_wide = system_path(ETC_GITCONFIG);
++		system_wide = git_system_path(ETC_GITCONFIG);
+ 	return system_wide;
+ }
+ 
+diff -ruN git-1.7.9.4-orig/exec_cmd.c git-1.7.9.4-modified/exec_cmd.c
+--- git-1.7.9.4-orig/exec_cmd.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/exec_cmd.c	2012-04-02 22:32:34.000000000 -0400
+@@ -6,7 +6,7 @@
+ static const char *argv_exec_path;
+ static const char *argv0_path;
+ 
+-const char *system_path(const char *path)
++const char *git_system_path(const char *path)
+ {
+ #ifdef RUNTIME_PREFIX
+ 	static const char *prefix;
+@@ -80,7 +80,7 @@
+ 		return env;
+ 	}
+ 
+-	return system_path(GIT_EXEC_PATH);
++	return git_system_path(GIT_EXEC_PATH);
+ }
+ 
+ static void add_path(struct strbuf *out, const char *path)
+diff -ruN git-1.7.9.4-orig/exec_cmd.h git-1.7.9.4-modified/exec_cmd.h
+--- git-1.7.9.4-orig/exec_cmd.h	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/exec_cmd.h	2012-04-02 22:32:34.000000000 -0400
+@@ -8,6 +8,6 @@
+ extern const char **prepare_git_cmd(const char **argv);
+ extern int execv_git_cmd(const char **argv); /* NULL terminated */
+ extern int execl_git_cmd(const char *cmd, ...);
+-extern const char *system_path(const char *path);
++extern const char *git_system_path(const char *path);
+ 
+ #endif /* GIT_EXEC_CMD_H */
+diff -ruN git-1.7.9.4-orig/git.c git-1.7.9.4-modified/git.c
+--- git-1.7.9.4-orig/git.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/git.c	2012-04-02 22:32:34.000000000 -0400
+@@ -93,13 +93,13 @@
+ 				exit(0);
+ 			}
+ 		} else if (!strcmp(cmd, "--html-path")) {
+-			puts(system_path(GIT_HTML_PATH));
++			puts(git_system_path(GIT_HTML_PATH));
+ 			exit(0);
+ 		} else if (!strcmp(cmd, "--man-path")) {
+-			puts(system_path(GIT_MAN_PATH));
++			puts(git_system_path(GIT_MAN_PATH));
+ 			exit(0);
+ 		} else if (!strcmp(cmd, "--info-path")) {
+-			puts(system_path(GIT_INFO_PATH));
++			puts(git_system_path(GIT_INFO_PATH));
+ 			exit(0);
+ 		} else if (!strcmp(cmd, "-p") || !strcmp(cmd, "--paginate")) {
+ 			use_pager = 1;

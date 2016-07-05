@@ -1,0 +1,71 @@
+#!/bin/bash
+
+APP=bdb
+
+if [ -z $1 ]; then
+    VER="5.3.15"
+else
+    VER=$1
+fi
+
+MAIN_VER=`echo $VER | cut -d . -f 1-2`
+
+if [ ! -e $APPS_DIR/sys/db-$VER.tar.gz ]; then
+    echo "Downloading source file..."
+    wget "http://download.oracle.com/otn/berkeley-db/db-5.3.15.tar.gz" -O $APPS_DIR/sys/db-$VER.tar.gz
+    if [ ! -e $APPS_DIR/sys/db-$VER.tar.gz ]; then
+        echo "Error! Source file not found!"
+        exit 2
+    fi
+fi
+
+
+cd $DIRECT_SYM_ROOT/apps/$APP
+rm -f *.bc *.ll
+rm -rf $DIRECT_SYM_ROOT/apps/$APP/db-$VER
+tar zxvf $APPS_DIR/sys/db-$VER.tar.gz
+cd db-$VER/build_unix
+
+# disable nearly everything!
+../dist/configure --disable-mutexsupport --disable-atomicsupport --disable-compression --disable-heap \
+	--disable-log_checksum --disable-partition --disable-queue --disable-replication --disable-statistics \
+	--disable-verify --enable-smallbuild --disable-largefile --with-cryptography=no --enable-hash
+if [ $? -ne 0 ]; then
+    echo "configuration failed."
+    exit 3
+fi
+
+patch < ../../use-llvm.patch
+if [ $? -ne 0 ]; then
+    echo "patch failed."
+    exit 3
+fi
+
+
+make -j16
+if [ $? -ne 0 ]; then
+    echo "make failed."
+    exit 3
+fi
+
+cp .libs/libdb-$MAIN_VER.so $DIRECT_SYM_ROOT/apps/$APP
+if [ $? -ne 0 ]; then
+    echo "result not found"
+    exit 3
+fi
+
+cd $DIRECT_SYM_ROOT/apps/$APP
+llvm-gcc -emit-llvm -c bdb-user.c -Idb-$VER/build_unix
+llvm-ld -disable-inlining bdb-user.o libdb-$MAIN_VER.so -o bdb-user
+if [ $? -ne 0 ]; then
+    echo "compile or link bdb-user failed"
+    exit 3
+fi
+
+
+# Link those bc with some uclibc libraries and pass them to KLEE optimization passes.
+echo "Optimizing bdb-user.bc"
+cd $DIRECT_SYM_ROOT/apps/$APP
+#$DIRECT_SYM_ROOT/common-scripts/link-libs.sh bdb-user.bc
+#$DIRECT_SYM_ROOT/common-scripts/klee-opt.sh bdb-user.bc
+

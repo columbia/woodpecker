@@ -1,0 +1,35 @@
+#!/bin/bash
+
+if [ -z $1 ]; then
+        # No version number
+        echo "Usage: <version number: e.g., 8.12>"
+        exit 1
+fi
+
+VER=$1
+cd $DIRECT_SYM_ROOT/apps/coreutils
+rm *.bc *.ll
+rm -rf $DIRECT_SYM_ROOT/apps/coreutils/coreutils-$VER
+tar zxvf $APPS_DIR/sys/coreutils-$VER.tar.gz
+cd coreutils-$VER
+patch -p1 < ../fix-errno-$VER.patch
+#grep -rl atexit . | xargs sed -i 's|atexit|//atexit|g'
+#exit 0;
+mkdir obj-llvm
+cd obj-llvm
+../configure --disable-nls CFLAGS="-g"
+make CC=llgcc
+
+cd src
+cp *.bc $DIRECT_SYM_ROOT/apps/coreutils
+
+# Link those bc with some uclibc libraries and pass them to KLEE optimization passes.
+cd $DIRECT_SYM_ROOT/apps/coreutils
+ALLBC=`ls *.bc`
+for BC in $ALLBC
+do
+  echo "Optimizing $BC..."
+  $DIRECT_SYM_ROOT/common-scripts/link-libs.sh $BC
+  $DIRECT_SYM_ROOT/common-scripts/klee-opt.sh $BC
+done
+

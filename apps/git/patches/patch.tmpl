@@ -1,0 +1,56 @@
+diff -ruN git-1.7.9.4-orig/git.c git-1.7.9.4-modified/git.c
+--- git-1.7.9.4-orig/git.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/git.c	2012-04-02 15:05:28.000000000 -0400
+@@ -273,6 +273,8 @@
+ 	int option;
+ };
+ 
++static struct cmd_struct command = TO_BE_CHANGED1;
++
+ static int run_builtin(struct cmd_struct *p, int argc, const char **argv)
+ {
+ 	int status, help;
+@@ -305,7 +307,7 @@
+ 
+ 	trace_argv_printf(argv, "trace: built-in: git");
+ 
+-	status = p->fn(argc, argv, prefix);
++	status = TO_BE_CHANGED3(argc, argv, prefix);
+ 	if (status)
+ 		return status;
+ 
+@@ -329,7 +331,7 @@
+ static void handle_internal_command(int argc, const char **argv)
+ {
+ 	const char *cmd = argv[0];
+-	static struct cmd_struct commands[] = {
++	/*static struct cmd_struct commands[] = {
+ 		{ "add", cmd_add, RUN_SETUP | NEED_WORK_TREE },
+ 		{ "annotate", cmd_annotate, RUN_SETUP },
+ 		{ "apply", cmd_apply, RUN_SETUP_GENTLY },
+@@ -441,7 +443,7 @@
+ 		{ "version", cmd_version },
+ 		{ "whatchanged", cmd_whatchanged, RUN_SETUP },
+ 		{ "write-tree", cmd_write_tree, RUN_SETUP },
+-	};
++	};*/
+ 	int i;
+ 	static const char ext[] = STRIP_EXTENSION;
+ 
+@@ -460,12 +462,14 @@
+ 		argv[0] = cmd = "help";
+ 	}
+ 
+-	for (i = 0; i < ARRAY_SIZE(commands); i++) {
++	/*for (i = 0; i < ARRAY_SIZE(commands); i++) {
+ 		struct cmd_struct *p = commands+i;
+ 		if (strcmp(p->cmd, cmd))
+ 			continue;
+ 		exit(run_builtin(p, argc, argv));
+-	}
++	}*/
++	if (strcmp(command.cmd, TO_BE_CHANGED2) == 0)
++		exit(run_builtin(&command, argc, argv));
+ }
+ 
+ static void execv_dashed_external(const char **argv)

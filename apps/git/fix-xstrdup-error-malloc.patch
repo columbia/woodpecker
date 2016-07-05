@@ -1,0 +1,185 @@
+diff -ruN git-1.7.9.4-orig/git-compat-util.h git-1.7.9.4-modified/git-compat-util.h
+--- git-1.7.9.4-orig/git-compat-util.h	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/git-compat-util.h	2012-04-06 18:54:24.000000000 -0400
+@@ -243,10 +243,10 @@
+ extern void vwritef(int fd, const char *prefix, const char *err, va_list params);
+ extern NORETURN void usage(const char *err);
+ extern NORETURN void usagef(const char *err, ...) __attribute__((format (printf, 1, 2)));
+-extern NORETURN void die(const char *err, ...) __attribute__((format (printf, 1, 2)));
+-extern NORETURN void die_errno(const char *err, ...) __attribute__((format (printf, 1, 2)));
+-extern int error(const char *err, ...) __attribute__((format (printf, 1, 2)));
+-extern void warning(const char *err, ...) __attribute__((format (printf, 1, 2)));
++#define die(str,...) exit(128)
++#define die_errno(str,...) exit(128)
++#define error(errstr,...) -1
++#define warning(str,...) fputs(str,stderr)
+ 
+ extern void set_die_routine(NORETURN_PTR void (*routine)(const char *err, va_list params));
+ extern void set_error_routine(void (*routine)(const char *err, va_list params));
+@@ -426,13 +426,13 @@
+ typedef void (*try_to_free_t)(size_t);
+ extern try_to_free_t set_try_to_free_routine(try_to_free_t);
+ 
+-extern char *xstrdup(const char *str);
+-extern void *xmalloc(size_t size);
++#define xstrdup(str) strdup(str)
++#define xmalloc(s) malloc(s)
+ extern void *xmallocz(size_t size);
+ extern void *xmemdupz(const void *data, size_t len);
+ extern char *xstrndup(const char *str, size_t len);
+-extern void *xrealloc(void *ptr, size_t size);
+-extern void *xcalloc(size_t nmemb, size_t size);
++#define xrealloc(ptr,s) realloc(ptr,s)
++#define xcalloc(num,s) calloc(num,s)
+ extern void *xmmap(void *start, size_t length, int prot, int flags, int fd, off_t offset);
+ extern ssize_t xread(int fd, void *buf, size_t len);
+ extern ssize_t xwrite(int fd, const void *buf, size_t len);
+diff -ruN git-1.7.9.4-orig/kwset.c git-1.7.9.4-modified/kwset.c
+--- git-1.7.9.4-orig/kwset.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/kwset.c	2012-04-06 00:09:23.000000000 -0400
+@@ -40,7 +40,7 @@
+ #include "compat/obstack.h"
+ 
+ #define NCHAR (UCHAR_MAX + 1)
+-#define obstack_chunk_alloc xmalloc
++#define obstack_chunk_alloc malloc
+ #define obstack_chunk_free free
+ 
+ #define U(c) ((unsigned char) (c))
+diff -ruN git-1.7.9.4-orig/strbuf.c git-1.7.9.4-modified/strbuf.c
+--- git-1.7.9.4-orig/strbuf.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/strbuf.c	2012-04-06 18:52:48.000000000 -0400
+@@ -64,9 +64,9 @@
+ void strbuf_grow(struct strbuf *sb, size_t extra)
+ {
+ 	int new_buf = !sb->alloc;
+-	if (unsigned_add_overflows(extra, 1) ||
++	/*if (unsigned_add_overflows(extra, 1) ||
+ 	    unsigned_add_overflows(sb->len, extra + 1))
+-		die("you want to use way too much memory");
++		die("you want to use way too much memory");*/
+ 	if (new_buf)
+ 		sb->buf = NULL;
+ 	ALLOC_GROW(sb->buf, sb->len + extra + 1, sb->alloc);
+diff -ruN git-1.7.9.4-orig/strbuf.h git-1.7.9.4-modified/strbuf.h
+--- git-1.7.9.4-orig/strbuf.h	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/strbuf.h	2012-04-06 18:53:03.000000000 -0400
+@@ -31,8 +31,8 @@
+ extern void strbuf_grow(struct strbuf *, size_t);
+ 
+ static inline void strbuf_setlen(struct strbuf *sb, size_t len) {
+-	if (len > (sb->alloc ? sb->alloc - 1 : 0))
+-		die("BUG: strbuf_setlen() beyond buffer");
++	/*if (len > (sb->alloc ? sb->alloc - 1 : 0))
++		die("BUG: strbuf_setlen() beyond buffer");*/
+ 	sb->len = len;
+ 	sb->buf[len] = '\0';
+ }
+diff -ruN git-1.7.9.4-orig/usage.c git-1.7.9.4-modified/usage.c
+--- git-1.7.9.4-orig/usage.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/usage.c	2012-04-06 18:54:40.000000000 -0400
+@@ -78,15 +78,15 @@
+ 	usagef("%s", err);
+ }
+ 
+-void NORETURN die(const char *err, ...)
++/*void NORETURN die(const char *err, ...)
+ {
+ 	va_list params;
+ 
+ 	va_start(params, err);
+ 	die_routine(err, params);
+ 	va_end(params);
+-}
+-
++}*/
++#if 0
+ void NORETURN die_errno(const char *fmt, ...)
+ {
+ 	va_list params;
+@@ -114,8 +114,8 @@
+ 	die_routine(fmt_with_err, params);
+ 	va_end(params);
+ }
+-
+-int error(const char *err, ...)
++#endif
++/*int error(const char *err, ...)
+ {
+ 	va_list params;
+ 
+@@ -123,8 +123,8 @@
+ 	error_routine(err, params);
+ 	va_end(params);
+ 	return -1;
+-}
+-
++}*/
++/*
+ void warning(const char *warn, ...)
+ {
+ 	va_list params;
+@@ -133,3 +133,4 @@
+ 	warn_routine(warn, params);
+ 	va_end(params);
+ }
++*/
+diff -ruN git-1.7.9.4-orig/wrapper.c git-1.7.9.4-modified/wrapper.c
+--- git-1.7.9.4-orig/wrapper.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/wrapper.c	2012-04-06 16:32:37.000000000 -0400
+@@ -17,7 +17,7 @@
+ 	try_to_free_routine = routine;
+ 	return old;
+ }
+-
++/*
+ char *xstrdup(const char *str)
+ {
+ 	char *ret = strdup(str);
+@@ -29,7 +29,8 @@
+ 	}
+ 	return ret;
+ }
+-
++*/
++/*
+ void *xmalloc(size_t size)
+ {
+ 	void *ret = malloc(size);
+@@ -49,7 +50,7 @@
+ #endif
+ 	return ret;
+ }
+-
++*/
+ void *xmallocz(size_t size)
+ {
+ 	void *ret;
+@@ -76,7 +77,7 @@
+ 	char *p = memchr(str, '\0', len);
+ 	return xmemdupz(str, p ? p - str : len);
+ }
+-
++/*
+ void *xrealloc(void *ptr, size_t size)
+ {
+ 	void *ret = realloc(ptr, size);
+@@ -92,7 +93,8 @@
+ 	}
+ 	return ret;
+ }
+-
++*/
++/*
+ void *xcalloc(size_t nmemb, size_t size)
+ {
+ 	void *ret = calloc(nmemb, size);
+@@ -108,7 +110,7 @@
+ 	}
+ 	return ret;
+ }
+-
++*/
+ /*
+  * xread() is the same a read(), but it automatically restarts read()
+  * operations with a recoverable error (EAGAIN and EINTR). xread()

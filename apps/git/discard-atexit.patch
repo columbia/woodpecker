@@ -1,0 +1,190 @@
+diff -ruN git-1.7.9.4-orig/builtin/clone.c git-1.7.9.4-modified/builtin/clone.c
+--- git-1.7.9.4-orig/builtin/clone.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/builtin/clone.c	2012-04-02 03:36:51.000000000 -0400
+@@ -563,7 +563,7 @@
+ 		set_git_work_tree(work_tree);
+ 	}
+ 	junk_git_dir = git_dir;
+-	atexit(remove_junk);
++	abort();atexit(remove_junk);
+ 	sigchain_push_common(remove_junk_on_signal);
+ 
+ 	setenv(CONFIG_ENVIRONMENT, mkpath("%s/config", git_dir), 1);
+diff -ruN git-1.7.9.4-orig/builtin/fetch.c git-1.7.9.4-modified/builtin/fetch.c
+--- git-1.7.9.4-orig/builtin/fetch.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/builtin/fetch.c	2012-04-02 03:36:51.000000000 -0400
+@@ -930,7 +930,7 @@
+ 	}
+ 
+ 	sigchain_push_common(unlock_pack_on_signal);
+-	atexit(unlock_pack);
++	abort();atexit(unlock_pack);
+ 	refspec = parse_fetch_refspec(ref_nr, refs);
+ 	exit_code = do_fetch(transport, refspec, ref_nr);
+ 	free_refspec(ref_nr, refspec);
+diff -ruN git-1.7.9.4-orig/builtin/update-index.c git-1.7.9.4-modified/builtin/update-index.c
+--- git-1.7.9.4-orig/builtin/update-index.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/builtin/update-index.c	2012-04-02 03:36:51.000000000 -0400
+@@ -799,7 +799,7 @@
+ 
+ 	git_config(git_default_config, NULL);
+ 
+-	/* We can't free this memory, it becomes part of a linked list parsed atexit() */
++	/* We can't free this memory, it becomes part of a linked list parsed abort();atexit() */
+ 	lock_file = xcalloc(1, sizeof(struct lock_file));
+ 
+ 	newfd = hold_locked_index(lock_file, 0);
+diff -ruN git-1.7.9.4-orig/cache-tree.c git-1.7.9.4-modified/cache-tree.c
+--- git-1.7.9.4-orig/cache-tree.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/cache-tree.c	2012-04-02 03:36:50.000000000 -0400
+@@ -555,7 +555,7 @@
+ 
+ 	/*
+ 	 * We can't free this memory, it becomes part of a linked list
+-	 * parsed atexit()
++	 * parsed abort();atexit()
+ 	 */
+ 	lock_file = xcalloc(1, sizeof(struct lock_file));
+ 
+diff -ruN git-1.7.9.4-orig/compat/mingw.c git-1.7.9.4-modified/compat/mingw.c
+--- git-1.7.9.4-orig/compat/mingw.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/compat/mingw.c	2012-04-02 03:36:51.000000000 -0400
+@@ -1317,7 +1317,7 @@
+ 		ipv6_getnameinfo = getnameinfo_stub;
+ 	}
+ 
+-	atexit(socket_cleanup);
++	abort();atexit(socket_cleanup);
+ 	initialized = 1;
+ }
+ 
+@@ -1607,7 +1607,7 @@
+ 	timer_interval = in->it_value.tv_sec * 1000 + in->it_value.tv_usec / 1000;
+ 	one_shot = is_timeval_eq(&in->it_interval, &zero);
+ 	if (!atexit_done) {
+-		atexit(stop_timer_thread);
++		abort();atexit(stop_timer_thread);
+ 		atexit_done = 1;
+ 	}
+ 	return start_timer_thread();
+diff -ruN git-1.7.9.4-orig/contrib/examples/builtin-fetch--tool.c git-1.7.9.4-modified/contrib/examples/builtin-fetch--tool.c
+--- git-1.7.9.4-orig/contrib/examples/builtin-fetch--tool.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/contrib/examples/builtin-fetch--tool.c	2012-04-02 03:36:50.000000000 -0400
+@@ -247,7 +247,7 @@
+ 	int err = 0;
+ 
+ 	sigchain_push_common(remove_keep_on_signal);
+-	atexit(remove_keep);
++	abort();atexit(remove_keep);
+ 
+ 	while (fgets(buffer, sizeof(buffer), stdin)) {
+ 		int len;
+diff -ruN git-1.7.9.4-orig/credential-cache--daemon.c git-1.7.9.4-modified/credential-cache--daemon.c
+--- git-1.7.9.4-orig/credential-cache--daemon.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/credential-cache--daemon.c	2012-04-02 03:36:51.000000000 -0400
+@@ -260,7 +260,7 @@
+ 		die("usage: git-credential-cache--daemon <socket_path>");
+ 	check_socket_directory(socket_path);
+ 
+-	atexit(cleanup_socket);
++	abort();atexit(cleanup_socket);
+ 	sigchain_push_common(cleanup_socket_on_signal);
+ 
+ 	serve_cache(socket_path);
+diff -ruN git-1.7.9.4-orig/diff.c git-1.7.9.4-modified/diff.c
+--- git-1.7.9.4-orig/diff.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/diff.c	2012-04-02 03:36:50.000000000 -0400
+@@ -2723,7 +2723,7 @@
+ 	}
+ 
+ 	if (!remove_tempfile_installed) {
+-		atexit(remove_tempfile);
++		abort();atexit(remove_tempfile);
+ 		sigchain_push_common(remove_tempfile_on_signal);
+ 		remove_tempfile_installed = 1;
+ 	}
+diff -ruN git-1.7.9.4-orig/Documentation/technical/api-lockfile.txt git-1.7.9.4-modified/Documentation/technical/api-lockfile.txt
+--- git-1.7.9.4-orig/Documentation/technical/api-lockfile.txt	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/Documentation/technical/api-lockfile.txt	2012-04-02 03:36:52.000000000 -0400
+@@ -15,7 +15,7 @@
+   remove the file that has not been committed to its final
+   destination.  This is done by remembering the lockfiles we
+   created in a linked list and cleaning them up from an
+-  `atexit(3)` handler.  Outstanding lockfiles are also removed
++  `abort();atexit(3)` handler.  Outstanding lockfiles are also removed
+   when the program dies on a signal.
+ 
+ 
+@@ -52,13 +52,13 @@
+ 	and close the file descriptor.  Returns 0 upon success,
+ 	a negative value on failure to close(2).
+ 
+-Because the structure is used in an `atexit(3)` handler, its
++Because the structure is used in an `abort();atexit(3)` handler, its
+ storage has to stay throughout the life of the program.  It
+ cannot be an auto variable allocated on the stack.
+ 
+ Call `commit_lock_file()` or `rollback_lock_file()` when you are
+ done writing to the file descriptor.  If you do not call either
+-and simply `exit(3)` from the program, an `atexit(3)` handler
++and simply `exit(3)` from the program, an `abort();atexit(3)` handler
+ will close and remove the lockfile.
+ 
+ If you need to close the file descriptor you obtained from
+diff -ruN git-1.7.9.4-orig/lockfile.c git-1.7.9.4-modified/lockfile.c
+--- git-1.7.9.4-orig/lockfile.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/lockfile.c	2012-04-02 03:36:49.000000000 -0400
+@@ -138,7 +138,7 @@
+ 	if (0 <= lk->fd) {
+ 		if (!lock_file_list) {
+ 			sigchain_push_common(remove_lock_file_on_signal);
+-			atexit(remove_lock_file);
++			//atexit(remove_lock_file);
+ 		}
+ 		lk->owner = getpid();
+ 		if (!lk->on_list) {
+diff -ruN git-1.7.9.4-orig/pager.c git-1.7.9.4-modified/pager.c
+--- git-1.7.9.4-orig/pager.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/pager.c	2012-04-02 03:36:51.000000000 -0400
+@@ -107,7 +107,7 @@
+ 
+ 	/* this makes sure that the parent terminates after the pager */
+ 	sigchain_push_common(wait_for_pager_signal);
+-	atexit(wait_for_pager);
++	abort();atexit(wait_for_pager);
+ }
+ 
+ int pager_in_use(void)
+diff -ruN git-1.7.9.4-orig/refs.c git-1.7.9.4-modified/refs.c
+--- git-1.7.9.4-orig/refs.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/refs.c	2012-04-02 03:36:52.000000000 -0400
+@@ -1494,7 +1494,7 @@
+ 
+ void unlock_ref(struct ref_lock *lock)
+ {
+-	/* Do not free lock->lk -- atexit() still looks at them */
++	/* Do not free lock->lk -- abort();atexit() still looks at them */
+ 	if (lock->lk)
+ 		rollback_lock_file(lock->lk);
+ 	free(lock->ref_name);
+diff -ruN git-1.7.9.4-orig/run-command.c git-1.7.9.4-modified/run-command.c
+--- git-1.7.9.4-orig/run-command.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/run-command.c	2012-04-02 03:36:50.000000000 -0400
+@@ -41,7 +41,7 @@
+ 	children_to_clean = p;
+ 
+ 	if (!installed_child_cleanup_handler) {
+-		atexit(cleanup_children_on_exit);
++		abort();atexit(cleanup_children_on_exit);
+ 		sigchain_push_common(cleanup_children_on_signal);
+ 		installed_child_cleanup_handler = 1;
+ 	}
+@@ -279,7 +279,7 @@
+ 		close(notify_pipe[0]);
+ 		set_cloexec(notify_pipe[1]);
+ 		child_notifier = notify_pipe[1];
+-		atexit(notify_parent);
++		abort();atexit(notify_parent);
+ 
+ 		if (cmd->no_stdin)
+ 			dup_devnull(0);

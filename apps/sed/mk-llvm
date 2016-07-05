@@ -1,0 +1,34 @@
+#!/bin/bash
+
+if [ -z $1 ]; then
+        # No version number
+        echo "Usage: <version number: e.g., 4.2.1>"
+        exit 1
+fi
+
+VER=$1
+PROG="sed"
+PROG_DIR="$DIRECT_SYM_ROOT/apps/$PROG"
+
+cd $PROG_DIR
+rm *.bc *.ll
+rm -rf $PROG_DIR/$PROG-$VER
+tar zxvf $APPS_DIR/sys/$PROG-$VER.tar.gz
+cd $PROG-$VER
+patch -p1 < ../fix-dcgettext.patch
+patch -p1 < ../rm-usage.patch
+
+#exit 0;
+
+./configure CC=llgcc CXX=llg++ LD=llvm-ld AR=llvm-ar AS=llvm-as RANLIB=llvm-ranlib --prefix=$PWD/install
+make
+
+cp sed/$PROG.bc $PROG_DIR
+
+# Link those bc with some uclibc libraries and pass them to KLEE optimization passes.
+echo "Optimizing $PROG.bc..."
+cd $PROG_DIR
+$DIRECT_SYM_ROOT/common-scripts/klee-opt.sh $PROG.bc
+$DIRECT_SYM_ROOT/apps/sed/link-libs.sh $PROG.bc
+$DIRECT_SYM_ROOT/common-scripts/klee-opt.sh $PROG.bc
+

@@ -1,0 +1,58 @@
+diff -ruN sed-4.2.1-orig/sed/compile.c sed-4.2.1-modified/sed/compile.c
+--- sed-4.2.1-orig/sed/compile.c	2012-04-26 02:00:45.000000000 -0400
++++ sed-4.2.1-modified/sed/compile.c	2012-04-26 05:29:29.000000000 -0400
+@@ -204,7 +204,7 @@
+ bad_prog(why)
+   const char *why;
+ {
+-  if (cur_input.name)
++/*  if (cur_input.name)
+     fprintf(stderr, _("%s: file %s line %lu: %s\n"),
+ 	    myname, cur_input.name, CAST(unsigned long)cur_input.line, why);
+   else
+@@ -212,7 +212,7 @@
+ 	    myname,
+ 	    CAST(unsigned long)cur_input.string_expr_count,
+ 	    CAST(unsigned long)(prog.cur-prog.base),
+-	    why);
++	    why);*/
+   exit(EXIT_FAILURE);
+ }
+ 
+diff -ruN sed-4.2.1-orig/sed/sed.c sed-4.2.1-modified/sed/sed.c
+--- sed-4.2.1-orig/sed/sed.c	2012-04-26 02:00:45.000000000 -0400
++++ sed-4.2.1-modified/sed/sed.c	2012-04-26 05:06:19.000000000 -0400
+@@ -111,6 +111,7 @@
+ usage(status)
+   int status;
+ {
++#if 0
+   FILE *out = status ? stderr : stdout;
+ 
+ #ifdef REG_PERL
+@@ -163,7 +164,7 @@
+ specified, then the standard input is read.\n\
+ \n"));
+   contact (status);
+-
++#endif
+   ck_fclose (NULL);
+   exit (status);
+ }
+@@ -311,6 +312,7 @@
+ 	  break;
+ 
+ 	case 'v':
++#if 0
+ #ifdef REG_PERL
+ 	  fprintf(stdout, _("super-sed version %s\n"), VERSION);
+ 	  fprintf(stdout, _("based on GNU sed version %s\n\n"), SED_FEATURE_VERSION);
+@@ -324,7 +326,7 @@
+ "), COPYRIGHT_YEAR);
+ 	  fputc('\n', stdout);
+ 	  contact(false);
+-
++#endif
+ 	  ck_fclose (NULL);
+ 	  exit (0);
+ 	case 'h':

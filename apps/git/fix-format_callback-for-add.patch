@@ -1,0 +1,42 @@
+diff -ruN /home/heming/rcs/apps/sys/git-1.7.9.4-orig/combine-diff.c git-1.7.9.4/combine-diff.c
+--- /home/heming/rcs/apps/sys/git-1.7.9.4-orig/combine-diff.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4/combine-diff.c	2012-04-04 00:17:58.000000000 -0400
+@@ -1093,6 +1093,8 @@
+ 	return pair;
+ }
+ 
++extern void update_callback(struct diff_queue_struct *q, struct diff_options *opt, void *cbdata);
++
+ static void handle_combined_callback(struct diff_options *opt,
+ 				     struct combine_diff_path *paths,
+ 				     int num_parent,
+@@ -1110,7 +1112,7 @@
+ 			continue;
+ 		q.queue[i++] = combined_pair(p, num_parent);
+ 	}
+-	opt->format_callback(&q, opt, opt->format_callback_data);
++	update_callback(&q, opt, opt->format_callback_data);
+ 	for (i = 0; i < num_paths; i++)
+ 		free_combined_pair(q.queue[i]);
+ 	free(q.queue);
+diff -ruN /home/heming/rcs/apps/sys/git-1.7.9.4-orig/diff.c git-1.7.9.4/diff.c
+--- /home/heming/rcs/apps/sys/git-1.7.9.4-orig/diff.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4/diff.c	2012-04-04 00:18:54.000000000 -0400
+@@ -4257,6 +4257,8 @@
+ 		warning(rename_limit_advice, varname, needed);
+ }
+ 
++extern void update_callback(struct diff_queue_struct *q, struct diff_options *opt, void *cbdata);
++
+ void diff_flush(struct diff_options *options)
+ {
+ 	struct diff_queue_struct *q = &diff_queued_diff;
+@@ -4357,7 +4359,7 @@
+ 	}
+ 
+ 	if (output_format & DIFF_FORMAT_CALLBACK)
+-		options->format_callback(q, options, options->format_callback_data);
++		update_callback(q, options, options->format_callback_data);
+ 
+ 	for (i = 0; i < q->nr; i++)
+ 		diff_free_filepair(q->queue[i]);

@@ -1,0 +1,107 @@
+diff -urN shadow-4.1.5-mod/lib/commonio.c shadow-4.1.5/lib/commonio.c
+--- shadow-4.1.5-mod/lib/commonio.c	2011-12-09 17:23:16.000000000 -0500
++++ shadow-4.1.5/lib/commonio.c	2012-04-27 19:25:38.730513151 -0400
+@@ -582,6 +582,11 @@
+    (for reading very long lines in group files).  */
+ #define BUFLEN 4096
+ 
++extern int group_open_hook (void);
++extern void group_free (void *ent);
++extern void *group_dup (const void *ent);
++void *group_parse (const char *line);
++
+ int commonio_open (struct commonio_db *db, int mode)
+ {
+ 	char *buf;
+@@ -686,9 +691,17 @@
+ 		if (name_is_nis (line)) {
+ 			eptr = NULL;
+ 		} else {
+-			eptr = db->ops->parse (line);
++            if (db->ops->parse == group_parse) {
++                eptr = group_parse(line);
++            } else {
++                eptr = db->ops->parse (line);
++            }
+ 			if (NULL != eptr) {
+-				eptr = db->ops->dup (eptr);
++                if (db->ops->dup == group_dup) {
++                    eptr = group_dup(eptr);
++                } else {
++                    eptr = db->ops->dup (eptr);
++                }
+ 				if (NULL == eptr) {
+ 					goto cleanup_line;
+ 				}
+@@ -713,16 +726,25 @@
+ 		goto cleanup_errno;
+ 	}
+ 
+-	if ((NULL != db->ops->open_hook) && (db->ops->open_hook () == 0)) {
+-		goto cleanup_errno;
+-	}
++    if (db->ops->open_hook == group_open_hook) {
++        if (group_open_hook() == 0) {
++            goto cleanup_errno;
++        }
++    } else {
++        if ((NULL != db->ops->open_hook) && (db->ops->open_hook () == 0)) {
++            goto cleanup_errno;
++        }
++    }
+ 
+ 	db->isopen = true;
+ 	return 1;
+ 
+       cleanup_entry:
+ 	if (NULL != eptr) {
+-		db->ops->free (eptr);
++        if (db->ops->free == group_free) {
++            group_free(eptr);
++        } else
++            db->ops->free (eptr);
+ 	}
+       cleanup_line:
+ 	free (line);
+diff -urN shadow-4.1.5-mod/lib/groupio.c shadow-4.1.5/lib/groupio.c
+--- shadow-4.1.5-mod/lib/groupio.c	2011-02-27 03:53:54.000000000 -0500
++++ shadow-4.1.5/lib/groupio.c	2012-04-27 19:25:41.353841840 -0400
+@@ -48,16 +48,16 @@
+ 	/*@null@*/ /*@returned@*/struct commonio_entry *gr1,
+ 	/*@null@*/struct commonio_entry *gr2);
+ static int split_groups (unsigned int max_members);
+-static int group_open_hook (void);
++int group_open_hook (void);
+ 
+-static /*@null@*/ /*@only@*/void *group_dup (const void *ent)
++/*@null@*/ /*@only@*/void *group_dup (const void *ent)
+ {
+ 	const struct group *gr = ent;
+ 
+ 	return __gr_dup (gr);
+ }
+ 
+-static void group_free (/*@out@*/ /*@only@*/void *ent)
++void group_free (/*@out@*/ /*@only@*/void *ent)
+ {
+ 	struct group *gr = ent;
+ 
+@@ -71,7 +71,7 @@
+ 	return gr->gr_name;
+ }
+ 
+-static void *group_parse (const char *line)
++void *group_parse (const char *line)
+ {
+ 	return (void *) sgetgrent (line);
+ }
+@@ -255,7 +255,7 @@
+ 	return commonio_sort (&group_db, gr_cmp);
+ }
+ 
+-static int group_open_hook (void)
++int group_open_hook (void)
+ {
+ 	unsigned int max_members = getdef_unum("MAX_MEMBERS_PER_GROUP", 0);
+ 	struct commonio_entry *gr1, *gr2;
+

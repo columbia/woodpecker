@@ -1,0 +1,21 @@
+diff -ruN coreutils-6.10-orig/lib/close-stream.c coreutils-6.10-modified/lib/close-stream.c
+--- coreutils-6.10-orig/lib/close-stream.c	2007-10-28 09:51:56.000000000 -0400
++++ coreutils-6.10-modified/lib/close-stream.c	2012-02-25 16:02:19.000000000 -0500
+@@ -64,10 +64,14 @@
+      closed) and doesn't generate any output (hence no previous error
+      and nothing to be flushed).  */
+ 
+-  if (prev_fail || (fclose_fail && (some_pending || errno != EBADF)))
++  if (prev_fail || (fclose_fail && (some_pending /*|| errno != EBADF*/)))
+     {
+-      if (! fclose_fail)
+-	errno = 0;
++      /* Heming: because bc2bdd callstack construction is broken here,
++         I comment out the errno, so bc2bdd would not report call stack construction
++         failure.
++      */
++      //if (! fclose_fail)
++	//errno = 0;
+       return EOF;
+     }
+ 

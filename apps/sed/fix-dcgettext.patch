@@ -1,0 +1,12 @@
+diff -ruN sed-4.2.1-orig/sed/sed.h sed-4.2.1-modified/sed/sed.h
+--- sed-4.2.1-orig/sed/sed.h	2012-04-26 02:00:45.000000000 -0400
++++ sed-4.2.1-modified/sed/sed.h	2012-04-26 02:01:53.000000000 -0400
+@@ -185,6 +185,8 @@
+   } x;
+ };
+ 
++#undef _(str)
++#define _(str) str
+ 
+ 
+ void bad_prog P_((const char *why));

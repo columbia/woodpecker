@@ -1,0 +1,106 @@
+diff -ru shadow-4.1.5/lib/prototypes.h shadow-4.1.5-mod/lib/prototypes.h
+--- shadow-4.1.5/lib/prototypes.h	2012-01-08 11:02:58.000000000 -0500
++++ shadow-4.1.5-mod/lib/prototypes.h	2012-04-23 04:39:26.959088446 -0400
+@@ -59,6 +59,9 @@
+ 
+ extern /*@observer@*/ const char *Prog;
+ 
++#undef _(str)
++#define _(str) str
++
+ /* addgrps.c */
+ #if defined (HAVE_SETGROUPS) && ! defined (USE_PAM)
+ extern int add_groups (const char *);
+@@ -354,7 +357,7 @@
+                         /*@null@*/const char *envp[], /*@out@*/int *status);
+ 
+ /* strtoday.c */
+-extern long strtoday (const char *);
++extern long xstrtoday (const char *);
+ 
+ /* suauth.c */
+ extern int check_su_auth (const char *actual_id,
+diff -ru shadow-4.1.5/libmisc/strtoday.c shadow-4.1.5-mod/libmisc/strtoday.c
+--- shadow-4.1.5/libmisc/strtoday.c	2010-03-20 06:20:56.000000000 -0400
++++ shadow-4.1.5-mod/libmisc/strtoday.c	2012-04-23 04:38:29.725856418 -0400
+@@ -63,7 +63,7 @@
+  *	24-sep-72
+  *	24sep72
+  */
+-long strtoday (const char *str)
++long xstrtoday (const char *str)
+ {
+ 	time_t t;
+ 	bool isnum = true;
+@@ -148,7 +148,7 @@
+  * it having a day number of 0.
+  */
+ 
+-long strtoday (const char *str)
++long xstrtoday (const char *str)
+ {
+ #ifdef HAVE_STRPTIME
+ 	struct tm tp;
+diff -ru shadow-4.1.5/src/chage.c shadow-4.1.5-mod/src/chage.c
+--- shadow-4.1.5/src/chage.c	2011-11-19 16:55:28.000000000 -0500
++++ shadow-4.1.5-mod/src/chage.c	2012-04-23 04:38:46.822492823 -0400
+@@ -216,7 +216,7 @@
+ 	if (strcmp (buf, "-1") == 0) {
+ 		lstchgdate = -1;
+ 	} else {
+-		lstchgdate = strtoday (buf);
++		lstchgdate = xstrtoday (buf);
+ 		if (lstchgdate <= -1) {
+ 			return 0;
+ 		}
+@@ -248,7 +248,7 @@
+ 	if (strcmp (buf, "-1") == 0) {
+ 		expdate = -1;
+ 	} else {
+-		expdate = strtoday (buf);
++		expdate = xstrtoday (buf);
+ 		if (expdate <= -1) {
+ 			return 0;
+ 		}
+@@ -403,7 +403,7 @@
+ 		switch (c) {
+ 		case 'd':
+ 			dflg = true;
+-			lstchgdate = strtoday (optarg);
++			lstchgdate = xstrtoday (optarg);
+ 			if (lstchgdate < -1) {
+ 				fprintf (stderr,
+ 				         _("%s: invalid date '%s'\n"),
+@@ -413,7 +413,7 @@
+ 			break;
+ 		case 'E':
+ 			Eflg = true;
+-			expdate = strtoday (optarg);
++			expdate = xstrtoday (optarg);
+ 			if (expdate < -1) {
+ 				fprintf (stderr,
+ 				         _("%s: invalid date '%s'\n"),
+diff -ru shadow-4.1.5/src/useradd.c shadow-4.1.5-mod/src/useradd.c
+--- shadow-4.1.5/src/useradd.c	2011-12-09 17:23:15.000000000 -0500
++++ shadow-4.1.5-mod/src/useradd.c	2012-04-23 04:38:55.739143706 -0400
+@@ -1057,7 +1057,7 @@
+ 				break;
+ 			case 'e':
+ 				if ('\0' != *optarg) {
+-					user_expire = strtoday (optarg);
++					user_expire = xstrtoday (optarg);
+ 					if (user_expire < -1) {
+ 						fprintf (stderr,
+ 						         _("%s: invalid date '%s'\n"),
+diff -ru shadow-4.1.5/src/usermod.c shadow-4.1.5-mod/src/usermod.c
+--- shadow-4.1.5/src/usermod.c	2011-12-09 17:23:15.000000000 -0500
++++ shadow-4.1.5-mod/src/usermod.c	2012-04-23 04:38:51.645817618 -0400
+@@ -927,7 +927,7 @@
+ 				break;
+ 			case 'e':
+ 				if ('\0' != *optarg) {
+-					user_newexpire = strtoday (optarg);
++					user_newexpire = xstrtoday (optarg);
+ 					if (user_newexpire < -1) {
+ 						fprintf (stderr,
+ 						         _("%s: invalid date '%s'\n"),

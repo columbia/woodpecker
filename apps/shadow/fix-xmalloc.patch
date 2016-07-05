@@ -1,0 +1,12 @@
+diff -ruN shadow-4.0.3-orig/libmisc/xmalloc.c shadow-4.0.3-modified/libmisc/xmalloc.c
+--- shadow-4.0.3-orig/libmisc/xmalloc.c	1998-12-28 15:34:56.000000000 -0500
++++ shadow-4.0.3-modified/libmisc/xmalloc.c	2012-04-18 18:32:26.000000000 -0400
+@@ -16,7 +16,7 @@
+ 
+ #include "defines.h"
+ 
+-extern char *malloc();
++//extern char *malloc();
+ 
+ char *
+ xmalloc(size_t size)

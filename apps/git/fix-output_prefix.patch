@@ -1,0 +1,150 @@
+diff -ruN git-1.7.9.4-orig/diff.c git-1.7.9.4-modified/diff.c
+--- git-1.7.9.4-orig/diff.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/diff.c	2012-04-03 23:32:42.000000000 -0400
+@@ -274,6 +274,8 @@
+ 	struct strbuf *header;
+ };
+ 
++extern struct strbuf *diff_output_prefix_callback(struct diff_options *opt, void *data);
++
+ static int count_lines(const char *data, int size)
+ {
+ 	int count, ch, completely_empty = 1, nl_just_seen = 0;
+@@ -375,7 +377,7 @@
+ 
+ 	if (o->output_prefix) {
+ 		struct strbuf *msg = NULL;
+-		msg = o->output_prefix(o, o->output_prefix_data);
++		msg = diff_output_prefix_callback(o, o->output_prefix_data);
+ 		assert(msg);
+ 		fwrite(msg->buf, msg->len, 1, file);
+ 	}
+@@ -599,7 +601,7 @@
+ 	struct strbuf *msgbuf;
+ 
+ 	if (o && o->output_prefix) {
+-		msgbuf = o->output_prefix(o, o->output_prefix_data);
++		msgbuf = diff_output_prefix_callback(o, o->output_prefix_data);
+ 		line_prefix = msgbuf->buf;
+ 	}
+ 
+@@ -806,7 +808,7 @@
+ 
+ 	assert(opt);
+ 	if (opt->output_prefix) {
+-		msgbuf = opt->output_prefix(opt, opt->output_prefix_data);
++		msgbuf = diff_output_prefix_callback(opt, opt->output_prefix_data);
+ 		line_prefix = msgbuf->buf;
+ 	}
+ 
+@@ -937,7 +939,7 @@
+ 
+ 	assert(opt);
+ 	if (opt->output_prefix) {
+-		msgbuf = opt->output_prefix(opt, opt->output_prefix_data);
++		msgbuf = diff_output_prefix_callback(opt, opt->output_prefix_data);
+ 		line_prefix = msgbuf->buf;
+ 	}
+ 
+@@ -1055,7 +1057,7 @@
+ 	struct strbuf *msgbuf;
+ 
+ 	if (o && o->output_prefix) {
+-		msgbuf = o->output_prefix(o, o->output_prefix_data);
++		msgbuf = diff_output_prefix_callback(o, o->output_prefix_data);
+ 		line_prefix = msgbuf->buf;
+ 	}
+ 
+@@ -1388,7 +1390,7 @@
+ 		return;
+ 
+ 	if (options->output_prefix) {
+-		msg = options->output_prefix(options, options->output_prefix_data);
++		msg = diff_output_prefix_callback(options, options->output_prefix_data);
+ 		line_prefix = msg->buf;
+ 	}
+ 
+@@ -1563,7 +1565,7 @@
+ 	}
+ 	if (options->output_prefix) {
+ 		struct strbuf *msg = NULL;
+-		msg = options->output_prefix(options,
++		msg = diff_output_prefix_callback(options,
+ 				options->output_prefix_data);
+ 		fprintf(options->file, "%s", msg->buf);
+ 	}
+@@ -1582,7 +1584,7 @@
+ 
+ 		if (options->output_prefix) {
+ 			struct strbuf *msg = NULL;
+-			msg = options->output_prefix(options,
++			msg = diff_output_prefix_callback(options,
+ 					options->output_prefix_data);
+ 			fprintf(options->file, "%s", msg->buf);
+ 		}
+@@ -1631,7 +1633,7 @@
+ 	struct strbuf *msg = NULL;
+ 
+ 	if (opt->output_prefix) {
+-		msg = opt->output_prefix(opt, opt->output_prefix_data);
++		msg = diff_output_prefix_callback(opt, opt->output_prefix_data);
+ 		line_prefix = msg->buf;
+ 	}
+ 
+@@ -1888,7 +1890,7 @@
+ 
+ 	assert(data->o);
+ 	if (data->o->output_prefix) {
+-		msgbuf = data->o->output_prefix(data->o,
++		msgbuf = diff_output_prefix_callback(data->o,
+ 			data->o->output_prefix_data);
+ 		line_prefix = msgbuf->buf;
+ 	}
+@@ -2100,7 +2102,7 @@
+ 	char *line_prefix = "";
+ 
+ 	if (o->output_prefix) {
+-		msgbuf = o->output_prefix(o, o->output_prefix_data);
++		msgbuf = diff_output_prefix_callback(o, o->output_prefix_data);
+ 		line_prefix = msgbuf->buf;
+ 	}
+ 
+@@ -2844,7 +2846,7 @@
+ 
+ 	*must_show_header = 1;
+ 	if (o->output_prefix) {
+-		msgbuf = o->output_prefix(o, o->output_prefix_data);
++		msgbuf = diff_output_prefix_callback(o, o->output_prefix_data);
+ 		line_prefix = msgbuf->buf;
+ 	}
+ 	strbuf_init(msg, PATH_MAX * 2 + 300);
+@@ -3763,7 +3765,7 @@
+ 	int inter_name_termination = line_termination ? '\t' : '\0';
+ 	if (opt->output_prefix) {
+ 		struct strbuf *msg = NULL;
+-		msg = opt->output_prefix(opt, opt->output_prefix_data);
++		msg = diff_output_prefix_callback(opt, opt->output_prefix_data);
+ 		fprintf(opt->file, "%s", msg->buf);
+ 	}
+ 
+@@ -4039,7 +4041,7 @@
+ 	char *line_prefix = "";
+ 
+ 	if (opt->output_prefix) {
+-		struct strbuf *buf = opt->output_prefix(opt, opt->output_prefix_data);
++		struct strbuf *buf = diff_output_prefix_callback(opt, opt->output_prefix_data);
+ 		line_prefix = buf->buf;
+ 	}
+ 
+diff -ruN git-1.7.9.4-orig/log-tree.c git-1.7.9.4-modified/log-tree.c
+--- git-1.7.9.4-orig/log-tree.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/log-tree.c	2012-04-03 23:32:56.000000000 -0400
+@@ -715,7 +715,7 @@
+ 				printf("---");
+ 			if (opt->diffopt.output_prefix) {
+ 				struct strbuf *msg = NULL;
+-				msg = opt->diffopt.output_prefix(&opt->diffopt,
++				msg = diff_output_prefix_callback(&opt->diffopt,
+ 					opt->diffopt.output_prefix_data);
+ 				fwrite(msg->buf, msg->len, 1, stdout);
+ 			}

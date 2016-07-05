@@ -1,0 +1,50 @@
+#!/bin/bash
+
+if [ -z $1 ]; then
+        # No version number
+        echo "Usage: <version number: e.g., 1.7.4>"
+        exit 1
+fi
+
+VER=$1
+cd $DIRECT_SYM_ROOT/apps/svn
+rm *.bc *.ll
+rm -rf $DIRECT_SYM_ROOT/apps/svn/subversion-$VER
+tar zxvf $APPS_DIR/sys/subversion-$VER.tar.gz
+cd subversion-$VER
+./configure --enable-all-static --prefix=$PWD/install CC=llgcc CXX=llg++ LD=llvm-ld AR=llvm-ar AS=llvm-as RANLIB=llvm-ranlib
+make
+
+# Copy all bc to top directory.
+cd $DIRECT_SYM_ROOT/apps/svn
+cp $DIRECT_SYM_ROOT/apps/svn/subversion-$VER/subversion/svnadmin/svnadmin.bc .
+cp $DIRECT_SYM_ROOT/apps/svn/subversion-$VER/subversion/svndumpfilter/svndumpfilter.bc .
+cp $DIRECT_SYM_ROOT/apps/svn/subversion-$VER/subversion/svnlook/svnlook.bc .
+cp $DIRECT_SYM_ROOT/apps/svn/subversion-$VER/subversion/svnrdump/svnrdump.bc .
+cp $DIRECT_SYM_ROOT/apps/svn/subversion-$VER/subversion/svnserve/svnserve.bc .
+
+cp $DIRECT_SYM_ROOT/apps/svn/subversion-$VER/subversion/svn/svn.bc .
+cp $DIRECT_SYM_ROOT/apps/svn/subversion-$VER/subversion/svnsync/svnsync.bc .
+cp $DIRECT_SYM_ROOT/apps/svn/subversion-$VER/subversion/svnversion/svnversion.bc .
+cp $DIRECT_SYM_ROOT/apps/svn/subversion-$VER/tools/client-side/svnmucc/svnmucc.bc .
+cp $DIRECT_SYM_ROOT/apps/svn/subversion-$VER/tools/dev/svnraisetreeconflict/svnraisetreeconflict.bc .
+
+cp $DIRECT_SYM_ROOT/apps/svn/subversion-$VER/tools/diff/diff3.bc .
+cp $DIRECT_SYM_ROOT/apps/svn/subversion-$VER/tools/diff/diff4.bc .
+cp $DIRECT_SYM_ROOT/apps/svn/subversion-$VER/tools/diff/diff.bc .
+
+cp $DIRECT_SYM_ROOT/apps/svn/subversion-$VER/tools/server-side/svnauthz-validate.bc .
+cp $DIRECT_SYM_ROOT/apps/svn/subversion-$VER/tools/server-side/svn-populate-node-origins-index.bc .
+cp $DIRECT_SYM_ROOT/apps/svn/subversion-$VER/tools/server-side/svn-rep-sharing-stats.bc .
+
+# Link those bc with some uclibc libraries and pass them to KLEE optimization passes.
+ALLBC=`ls *.bc`
+for BC in $ALLBC
+do
+  echo "Optimizing $BC..."
+  $DIRECT_SYM_ROOT/common-scripts/klee-opt.sh $BC
+  $DIRECT_SYM_ROOT/common-scripts/link-libs.sh $BC
+  $DIRECT_SYM_ROOT/common-scripts/klee-opt.sh $BC
+done
+
+

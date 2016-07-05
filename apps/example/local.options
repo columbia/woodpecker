@@ -1,0 +1,33 @@
+######################################
+#           xtern path slicer options              #
+
+# The flag to specify whether to do inter thread slicing.
+# If it is 1, then the "intra_thread_slicing_start_index" is invalid;
+# If it is 0, then the "intra_thread_slicing_start_index" is valid.
+tern_path_slicer::do_inter_thread_slicing 1
+
+# The flag to specify whether to do intra thread slicing.
+tern_path_slicer::do_intra_thread_slicing 1
+
+# The flag to specify start indwex of intra thread slicing,
+# iff do_inter_thread_slicing is 0.
+tern_path_slicer::intra_thread_slicing_start_index 0
+
+# Whether do intra-thread slicing starting from the last instruction in the trace pat$
+tern_path_slicer::do_intra_slicing_at_last_instr 0
+
+# Debug print flag.
+tern_path_slicer::print_debug_info 1
+
+# Slicing mode. Normal: 0; Max: 1; Range: 2.
+tern_path_slicer::slicing_mode 0
+
+# AAOL debug level.
+tern_path_slicer::aaol_dbg_level 0
+
+# Trace recording/loading interface. 0 means KLEE, 1 means xtern.
+tern_path_slicer::trace_util_type 0
+
+# Context sensitive alias query.
+tern_path_slicer::context_sensitive_ailas_query 1
+

@@ -1,0 +1,42 @@
+diff -ruN cpio-2.11/gnu/argp-parse.c cpio-2.11-modified//gnu/argp-parse.c
+--- cpio-2.11/gnu/argp-parse.c	2010-03-10 04:26:56.000000000 -0500
++++ cpio-2.11-modified//gnu/argp-parse.c	2012-05-01 04:33:12.000000000 -0400
+@@ -218,6 +218,8 @@
+   void *hook;
+ };
+ 
++extern error_t parse_opt (int key, char *arg, struct argp_state *state);
++
+ /* Call GROUP's parser with KEY and ARG, swapping any group-specific info
+    from STATE before calling, and back into state afterwards.  If GROUP has
+    no parser, EBADKEY is returned.  */
+@@ -231,7 +233,16 @@
+       state->input = group->input;
+       state->child_inputs = group->child_inputs;
+       state->arg_num = group->args_processed;
+-      err = (*group->parser)(key, arg, state);
++
++      if (group->parser == argp_default_parser)
++        err = argp_default_parser(key, arg, state);
++      else if (group->parser == argp_version_parser)
++        err = argp_version_parser(key, arg, state);
++      else if (group->parser == parse_opt)
++        err = parse_opt(key, arg, state);
++      else
++        err = (*group->parser)(key, arg, state);
++
+       group->hook = state->hook;
+       return err;
+     }
+diff -ruN cpio-2.11/src/main.c cpio-2.11-modified//src/main.c
+--- cpio-2.11/src/main.c	2010-02-12 06:35:09.000000000 -0500
++++ cpio-2.11-modified//src/main.c	2012-05-01 04:33:26.000000000 -0400
+@@ -272,7 +272,7 @@
+   return 1;
+ }
+ 
+-static error_t
++error_t
+ parse_opt (int key, char *arg, struct argp_state *state)
+ {
+   switch (key)

@@ -1,0 +1,14 @@
+diff -ruN tar-1.26/gnu/fcntl.c tar-1.26-modified/gnu/fcntl.c
+--- tar-1.26/gnu/fcntl.c	2011-03-12 04:14:28.000000000 -0500
++++ tar-1.26-modified/gnu/fcntl.c	2012-04-09 17:37:15.000000000 -0400
+@@ -297,8 +297,8 @@
+     default:
+       {
+ #if HAVE_FCNTL
+-        void *p = va_arg (arg, void *);
+-        result = fcntl (fd, action, p);
++        //void *p = va_arg (arg, void *);//Heming: a klee memory err here, fixed.
++        result = fcntl (fd, action, arg);
+ #else
+         errno = EINVAL;
+ #endif

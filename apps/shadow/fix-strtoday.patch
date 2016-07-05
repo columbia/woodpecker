@@ -1,0 +1,125 @@
+diff -ruN shadow-4.0.3-orig/lib/prototypes.h shadow-4.0.3-modified/lib/prototypes.h
+--- shadow-4.0.3-orig/lib/prototypes.h	2000-08-26 14:27:17.000000000 -0400
++++ shadow-4.0.3-modified/lib/prototypes.h	2012-04-18 19:42:22.000000000 -0400
+@@ -193,8 +193,8 @@
+ extern int spw_unpack(char *, int, struct spwd *);
+ #endif
+ 
+-/* strtoday.c */
+-extern long strtoday(const char *);
++/* mystrtoday.c */
++extern long mystrtoday(const char *);
+ 
+ /* suauth.c */
+ extern int check_su_auth(const char *, const char *);
+diff -ruN shadow-4.0.3-orig/libmisc/strtoday.c shadow-4.0.3-modified/libmisc/strtoday.c
+--- shadow-4.0.3-orig/libmisc/strtoday.c	1999-03-07 14:14:42.000000000 -0500
++++ shadow-4.0.3-modified/libmisc/strtoday.c	2012-04-18 19:43:17.000000000 -0400
+@@ -47,7 +47,7 @@
+ #include "getdate.h"
+ 
+ /*
+- * strtoday() now uses get_date() (borrowed from GNU shellutils)
++ * mystrtoday() now uses get_date() (borrowed from GNU shellutils)
+  * which can handle many date formats, for example:
+  *	1970-09-17	# ISO 8601.
+  *	70-9-17		# This century assumed by default.
+@@ -61,7 +61,7 @@
+  *	24sep72
+  */
+ long
+-strtoday(const char *str)
++mystrtoday(const char *str)
+ {
+ 	time_t t;
+ 
+@@ -113,7 +113,7 @@
+ #endif
+ 
+ /*
+- * strtoday - compute the number of days since 1970.
++ * mystrtoday - compute the number of days since 1970.
+  *
+  * the total number of days prior to the current date is
+  * computed.  january 1, 1970 is used as the origin with
+@@ -121,7 +121,7 @@
+  */
+ 
+ long
+-strtoday(const char *str)
++mystrtoday(const char *str)
+ {
+ #ifdef HAVE_STRPTIME
+ 	struct tm tp;
+diff -ruN shadow-4.0.3-orig/src/chage.c shadow-4.0.3-modified/src/chage.c
+--- shadow-4.0.3-orig/src/chage.c	2002-01-05 10:41:43.000000000 -0500
++++ shadow-4.0.3-modified/src/chage.c	2012-04-18 19:42:38.000000000 -0400
+@@ -175,7 +175,7 @@
+ 
+ 	if (strcmp (buf, EPOCH) == 0)
+ 		lastday = -1;
+-	else if ((lastday = strtoday (buf)) == -1)
++	else if ((lastday = mystrtoday (buf)) == -1)
+ 		return 0;
+ 
+ #ifdef	SHADOWPWD
+@@ -198,7 +198,7 @@
+ 
+ 	if (strcmp (buf, EPOCH) == 0)
+ 		expdays = -1;
+-	else if ((expdays = strtoday (buf)) == -1)
++	else if ((expdays = mystrtoday (buf)) == -1)
+ 		return 0;
+ #endif				/* SHADOWPWD */
+ 
+@@ -424,7 +424,7 @@
+ 		case 'd':
+ 			dflg++;
+ 			if (!isnum (optarg))
+-				lastday = strtoday (optarg);
++				lastday = mystrtoday (optarg);
+ 			else
+ 				lastday = strtol (optarg, 0, 10);
+ 			break;
+@@ -440,7 +440,7 @@
+ 		case 'E':
+ 			Eflg++;
+ 			if (!isnum (optarg))
+-				expdays = strtoday (optarg);
++				expdays = mystrtoday (optarg);
+ 			else
+ 				expdays = strtol (optarg, 0, 10);
+ 			break;
+diff -ruN shadow-4.0.3-orig/src/useradd.c shadow-4.0.3-modified/src/useradd.c
+--- shadow-4.0.3-orig/src/useradd.c	2002-01-10 08:01:28.000000000 -0500
++++ shadow-4.0.3-modified/src/useradd.c	2012-04-18 19:42:38.000000000 -0400
+@@ -1222,7 +1222,7 @@
+ #ifdef SHADOWPWD
+ 		case 'e':
+ 			if (*optarg) {
+-				user_expire = strtoday (optarg);
++				user_expire = mystrtoday (optarg);
+ 				if (user_expire == -1) {
+ 					fprintf (stderr,
+ 						 _
+@@ -1390,7 +1390,7 @@
+ 
+ #ifdef SHADOWPWD
+ 	if (!eflg)
+-		user_expire = strtoday (def_expire);
++		user_expire = mystrtoday (def_expire);
+ #endif
+ 
+ 	if (!gflg)
+diff -ruN shadow-4.0.3-orig/src/usermod.c shadow-4.0.3-modified/src/usermod.c
+--- shadow-4.0.3-orig/src/usermod.c	2002-01-05 10:41:44.000000000 -0500
++++ shadow-4.0.3-modified/src/usermod.c	2012-04-18 19:42:38.000000000 -0400
+@@ -1103,7 +1103,7 @@
+ #ifdef SHADOWPWD
+ 		case 'e':
+ 			if (*optarg) {
+-				user_expire = strtoday (optarg);
++				user_expire = mystrtoday (optarg);
+ 				if (user_expire == -1) {
+ 					fprintf (stderr,
+ 						 _

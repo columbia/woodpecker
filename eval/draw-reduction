@@ -1,0 +1,23 @@
+set terminal postscript eps enhanced "NimbusSanL-Regu, 24" fontfile "/usr/share/texmf-texlive/fonts/type1/urw/helvetic/uhvr8a.pfb"
+set style data boxerror
+set size 2.6, 2.5
+
+set key at 10,150,2
+
+set border 2
+set xzeroaxis lt 1 lw 2
+
+set xtics nomirror
+set ytics nomirror
+
+#set yrange [0:1.0]
+
+set boxwidth 0.5 absolute
+
+set xtics font ",18"
+set xtics rotate by 90 offset 0,-2.5
+
+#set ylabel "% of not pruned paths"
+
+# Below are added by scripts.
+

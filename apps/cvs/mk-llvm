@@ -1,0 +1,36 @@
+#!/bin/bash
+
+if [ -z $1 ]; then
+        # No version number
+        echo "Usage: <version number: e.g., 1.11.23>"
+        exit 1
+fi
+
+VER=$1
+cd $DIRECT_SYM_ROOT/apps/cvs
+rm *.bc *.ll
+rm -rf $DIRECT_SYM_ROOT/apps/cvs/cvs-$VER
+tar zxvf $APPS_DIR/sys/cvs-$VER.tar.gz
+cd cvs-$VER
+patch -p1 < ../fix-getline-$VER.patch
+# This patch always fails to be added, don't know why, use cp instead.
+#patch -p1 < ../fix-error.patch
+cp ../error.c.bak ./src/error.c
+
+#exit 0;
+
+# Heming: we have to rename the "strcat_filename_onto_homedir" function otherwise bc2bdd 
+# would report an "BDD False" error while construcing calling context for this function.
+find . -type f -exec sed -i 's/strcat_filename_onto_homedir/sc_fname_dir/g' {} \;
+
+./configure CC=llgcc AR=llvm-ar --without-gssapi --prefix=$PWD/install
+make
+
+cp src/cvs.bc $DIRECT_SYM_ROOT/apps/cvs
+
+# Link those bc with some uclibc libraries and pass them to KLEE optimization passes.
+echo "Optimizing cvs.bc..."
+cd $DIRECT_SYM_ROOT/apps/cvs
+$DIRECT_SYM_ROOT/apps/cvs/link-libs.sh cvs.bc
+$DIRECT_SYM_ROOT/common-scripts/klee-opt.sh cvs.bc
+

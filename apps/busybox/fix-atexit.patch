@@ -1,0 +1,99 @@
+diff -ruN busybox-1.19.4-orig/e2fsprogs/old_e2fsprogs/mke2fs.c busybox-1.19.4-modified/e2fsprogs/old_e2fsprogs/mke2fs.c
+--- busybox-1.19.4-orig/e2fsprogs/old_e2fsprogs/mke2fs.c	2012-04-28 18:12:11.000000000 -0400
++++ busybox-1.19.4-modified/e2fsprogs/old_e2fsprogs/mke2fs.c	2012-04-28 18:13:45.000000000 -0400
+@@ -1184,8 +1184,8 @@
+ 	int		val;
+ 	io_manager	io_ptr;
+ 
+-	if (ENABLE_FEATURE_CLEAN_UP)
+-		atexit(mke2fs_clean_up);
++	//if (ENABLE_FEATURE_CLEAN_UP)
++		//atexit(mke2fs_clean_up);
+ 	if (!PRS(argc, argv))
+ 		return 0;
+ 
+diff -ruN busybox-1.19.4-orig/e2fsprogs/old_e2fsprogs/tune2fs.c busybox-1.19.4-modified/e2fsprogs/old_e2fsprogs/tune2fs.c
+--- busybox-1.19.4-orig/e2fsprogs/old_e2fsprogs/tune2fs.c	2012-04-28 18:12:11.000000000 -0400
++++ busybox-1.19.4-modified/e2fsprogs/old_e2fsprogs/tune2fs.c	2012-04-28 18:15:08.000000000 -0400
+@@ -568,8 +568,8 @@
+ 	struct ext2_super_block *sb;
+ 	io_manager io_ptr;
+ 
+-	if (ENABLE_FEATURE_CLEAN_UP)
+-		atexit(tune2fs_clean_up);
++	//if (ENABLE_FEATURE_CLEAN_UP)
++		//atexit(tune2fs_clean_up);
+ 
+ 	if (ENABLE_E2LABEL && (applet_name[0] == 'e')) /* e2label */
+ 		parse_e2label_options(argc, argv);
+diff -ruN busybox-1.19.4-orig/editors/sed.c busybox-1.19.4-modified/editors/sed.c
+--- busybox-1.19.4-orig/editors/sed.c	2012-04-28 18:12:10.000000000 -0400
++++ busybox-1.19.4-modified/editors/sed.c	2012-04-28 18:14:46.000000000 -0400
+@@ -1366,7 +1366,7 @@
+ 	INIT_G();
+ 
+ 	/* destroy command strings on exit */
+-	if (ENABLE_FEATURE_CLEAN_UP) atexit(sed_free_and_close_stuff);
++	//if (ENABLE_FEATURE_CLEAN_UP) atexit(sed_free_and_close_stuff);
+ 
+ 	/* Lie to autoconf when it starts asking stupid questions. */
+ 	if (argv[1] && !strcmp(argv[1], "--version")) {
+@@ -1384,7 +1384,7 @@
+ 	//argc -= optind;
+ 	argv += optind;
+ 	if (opt & OPT_in_place) { // -i
+-		atexit(cleanup_outname);
++		//atexit(cleanup_outname);
+ 	}
+ 	if (opt & 0x2) G.regex_type |= REG_EXTENDED; // -r
+ 	//if (opt & 0x4) G.be_quiet++; // -n
+diff -ruN busybox-1.19.4-orig/mailutils/mail.c busybox-1.19.4-modified/mailutils/mail.c
+--- busybox-1.19.4-orig/mailutils/mail.c	2012-04-28 18:12:10.000000000 -0400
++++ busybox-1.19.4-modified/mailutils/mail.c	2012-04-28 18:12:45.000000000 -0400
+@@ -72,7 +72,7 @@
+ 	// check whether child is alive
+ 	//redundant:signal_handler(SIGCHLD);
+ 	// child seems OK -> parent goes on
+-	atexit(kill_helper);
++	//atexit(kill_helper);
+ }
+ 
+ char* FAST_FUNC send_mail_command(const char *fmt, const char *param)
+diff -ruN busybox-1.19.4-orig/procps/powertop.c busybox-1.19.4-modified/procps/powertop.c
+--- busybox-1.19.4-orig/procps/powertop.c	2012-04-28 18:12:11.000000000 -0400
++++ busybox-1.19.4-modified/procps/powertop.c	2012-04-28 18:14:23.000000000 -0400
+@@ -713,7 +713,7 @@
+ 	/* Turn on unbuffered input, turn off echoing */
+ 	new_settings.c_lflag &= ~(ISIG | ICANON | ECHO | ECHONL);
+ 	/* So we don't forget to reset term settings */
+-	atexit(reset_term);
++	//atexit(reset_term);
+ 	bb_signals(BB_FATAL_SIGS, sig_handler);
+ 	tcsetattr_stdin_TCSANOW(&new_settings);
+ #endif
+diff -ruN busybox-1.19.4-orig/scripts/kconfig/mconf.c busybox-1.19.4-modified/scripts/kconfig/mconf.c
+--- busybox-1.19.4-orig/scripts/kconfig/mconf.c	2012-04-28 18:12:11.000000000 -0400
++++ busybox-1.19.4-modified/scripts/kconfig/mconf.c	2012-04-28 18:13:09.000000000 -0400
+@@ -1066,7 +1066,7 @@
+ 	}
+ 
+ 	tcgetattr(1, &ios_org);
+-	atexit(conf_cleanup);
++	//atexit(conf_cleanup);
+ 	init_wsize();
+ 	conf(&rootmenu);
+ 
+diff -ruN busybox-1.19.4-orig/util-linux/mount.c busybox-1.19.4-modified/util-linux/mount.c
+--- busybox-1.19.4-orig/util-linux/mount.c	2012-04-28 18:12:11.000000000 -0400
++++ busybox-1.19.4-modified/util-linux/mount.c	2012-04-28 18:14:08.000000000 -0400
+@@ -1835,8 +1835,8 @@
+ 		// mounts after /proc shows up can autodetect.
+ 		if (!fslist) {
+ 			fslist = get_block_backed_filesystems();
+-			if (ENABLE_FEATURE_CLEAN_UP && fslist)
+-				atexit(delete_block_backed_filesystems);
++			//if (ENABLE_FEATURE_CLEAN_UP && fslist)
++				//atexit(delete_block_backed_filesystems);
+ 		}
+ 
+ 		for (fl = fslist; fl; fl = fl->link) {

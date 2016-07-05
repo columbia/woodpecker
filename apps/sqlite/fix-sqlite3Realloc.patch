@@ -1,0 +1,16 @@
+diff -ruN /home/heming/rcs/apps/sys/sqlite-3.3.3/src/util.c sqlite-3.3.3//src/util.c
+--- /home/heming/rcs/apps/sys/sqlite-3.3.3/src/util.c	2006-01-23 10:39:59.000000000 -0500
++++ sqlite-3.3.3//src/util.c	2012-04-11 16:45:37.000000000 -0400
+@@ -585,7 +585,11 @@
+   }
+ 
+   if( !p ){
+-    return sqlite3Malloc(n);
++    //return sqlite3Malloc(n);
++    p = malloc(n);
++    if (p)
++      memset(p, 0, n);
++    return p;
+   }else{
+     void *np = 0;
+     if( !handleSoftLimit(n - OSSIZEOF(p)) ){

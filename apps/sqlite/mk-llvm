@@ -1,0 +1,63 @@
+#!/bin/bash
+
+if [ "$1" = "" ]; then
+	VER=3.3.3
+else
+	VER=$1
+fi
+
+BUILD_EXIST=$2
+
+PROG="sqlite"
+PROG_DIR="$DIRECT_SYM_ROOT/apps/$PROG/"
+
+if [ "$BUILD_EXIST" = "--build-exist" ]; then
+	# NOP.
+	echo "Build exist..."
+	cd $PROG_DIR/sqlite-obj
+else
+## clean the folder if it's there
+	cd $PROG_DIR
+	rm -fr *.bc *.ll sqlite-*
+
+## Unpack the tarball
+	tar xvzf $APPS_DIR/sys/sqlite-$VER.tar.gz
+
+	cd $PROG_DIR/sqlite-$VER
+	patch -p1 < ../fix-sqlite3ErrorMsg.patch
+	patch -p1 < ../fix-sqlite3Realloc.patch
+	cd $PROG_DIR
+
+#exit 0;
+
+## Drop in and start building
+	mkdir -p sqlite-obj
+	cd sqlite-obj
+	../sqlite-$VER/configure --enable-static --disable-threadsafe --disable-cross-thread-connections --disable-tcl
+fi
+
+# Makes all the source files we need including the ones that lemon makes
+make target_source
+
+# Go into the source directory and move the tcl file that isn't needed and throws errors
+mkdir -p tsrc
+cd tsrc
+mv tclsqlite.c tclsqlite.c.not_used
+
+for i in *.c; do
+llvm-gcc -emit-llvm $i -c -o ${i%.*}.bc
+done
+
+rm shell.bc
+llvm-ld *.bc -link-as-library -o libsqlite3.la
+llvm-gcc -emit-llvm -o shell.bc -c shell.c
+llvm-ld shell.bc libsqlite3.la -o sqlite3
+cp sqlite3.bc libsqlite3.la ../../
+
+
+# Link libs.
+cd $PROG_DIR
+mv sqlite3.bc $PROG.bc
+echo "Optimizing $PROG.bc..."
+$DIRECT_SYM_ROOT/common-scripts/klee-opt.sh $PROG.bc
+

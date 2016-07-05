@@ -1,0 +1,58 @@
+#!/bin/bash
+
+if [ -z $1 ]; then
+        # No version number
+        echo "Usage: <version number: e.g., 4.1.5>"
+        exit 1
+fi
+
+VER=$1
+PROG="shadow"
+PROG_DIR="$DIRECT_SYM_ROOT/apps/$PROG"
+
+cd $PROG_DIR
+rm *.bc *.ll
+rm -rf $PROG_DIR/$PROG-$VER
+if [ $VER = "4.0.3" ]; then
+    tar xvf $APPS_DIR/sys/$PROG-$VER.tar.gz
+else
+    tar xvf $APPS_DIR/sys/$PROG-$VER.tar.bz2
+fi
+cd $PROG-$VER
+
+#patch.
+if [ $VER = "4.0.3" ]; then
+    patch -p1 < ../fix-xmalloc.patch
+    patch -p1 < ../fix-strtoday.patch
+    patch -p1 < ../fix-fprintf-macro.patch
+elif [ $VER = "4.1.5" ]; then
+    patch -p1 < ../fix-415.patch
+    #patch -p1 < ../gpasswd-fix-funcptr-415.patch
+    patch -p1 < ../rm-SYSLOG.patch
+fi
+#exit 0;
+
+mkdir obj
+cd obj
+if [ $VER = "4.1.5" ]; then
+../configure --prefix=$PWD/install --enable-static --without-libpam \
+	CFLAGS="-g" CC=llgcc CXX=llg++ LD=llvm-ld AR=llvm-ar AS=llvm-as RANLIB=llvm-ranlib
+else
+../configure --prefix=$PWD/install --enable-static --without-libpam \
+	CFLAGS="-g -O2" CC=llgcc CXX=llg++ LD=llvm-ld AR=llvm-ar AS=llvm-as RANLIB=llvm-ranlib
+fi
+
+make
+
+# Link those bc with some uclibc libraries and pass them to KLEE optimization passes.
+cd $PROG_DIR
+cp $PROG_DIR/$PROG-$VER/obj/src/*.bc .
+ALLBC=`ls *.bc`
+for BC in $ALLBC
+do
+  echo "Optimizing $BC..."
+  $DIRECT_SYM_ROOT/common-scripts/klee-opt.sh $BC
+  $DIRECT_SYM_ROOT/common-scripts/link-libs.sh $BC # Use the common one.
+  $DIRECT_SYM_ROOT/common-scripts/klee-opt.sh $BC
+done
+

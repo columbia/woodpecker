@@ -1,0 +1,10 @@
+diff -ruN tar-1.26/src/tar.h tar-1.26-modified/src/tar.h
+--- tar-1.26/src/tar.h	2010-10-24 14:07:46.000000000 -0400
++++ tar-1.26-modified/src/tar.h	2012-04-26 02:15:22.000000000 -0400
+@@ -349,3 +349,6 @@
+   struct star_in_header star_in_header;
+   struct star_ext_header star_ext_header;
+ };
++
++#undef _(str)
++#define _(str) str

@@ -1,0 +1,57 @@
+#!/bin/bash
+
+if [ -z $1 ]; then
+        # No version number
+        echo "Usage: <version number: e.g., 1.7.9.4>"
+        exit 1
+fi
+
+VER=$1
+cd $DIRECT_SYM_ROOT/apps/git
+rm -rf *.bc *.ll git-*
+tar zxvf $APPS_DIR/sys/git-$VER.tar.gz
+cd $DIRECT_SYM_ROOT/apps/git/patches
+tar zxvf patches.tar.gz
+cd $DIRECT_SYM_ROOT/apps/git/git-$VER
+
+# Patches.
+patch -p1 < ../discard-recursive-get_sha1_1.patch
+patch -p1 < ../fix-system_path.patch
+patch -p1 < ../fix-SHA1_HEADER.patch
+patch -p1 < ../discard-atexit.patch
+patch -p1 < ../fix-output_prefix.patch
+patch -p1 < ../fix-xstrdup-error-malloc.patch
+patch -p1 < ../cut-flag-prune-reverse-limited-graph.patch
+
+#exit 0;
+
+./configure --without-libpcre --without-curl --without-expat --without-iconv \
+  --without-tcltk --disable-pthreads --prefix=$PWD/install \
+  CC=llgcc CXX=llg++ LD=llvm-ld AR=llvm-ar AS=llvm-as RANLIB=llvm-ranlib
+
+# Make all bc based on each command (such as add, commit, and rm).
+cd $DIRECT_SYM_ROOT/apps/git/patches
+ALLPATCH=`ls git-*`
+cd $DIRECT_SYM_ROOT/apps/git/git-$VER
+cp git.c git-orig.c.bak
+for PATCH in $ALLPATCH
+do
+  echo "Compiling $PATCH..."
+  `patch -p1 < $DIRECT_SYM_ROOT/apps/git/patches/$PATCH &> /dev/null`
+  `make &> /dev/null`
+  sleep 1;
+  mv git.bc $DIRECT_SYM_ROOT/apps/git/$PATCH
+  mv git.c $PATCH.c.bak
+  cp git-orig.c.bak git.c
+
+  # Opts.
+  cd $DIRECT_SYM_ROOT/apps/git/
+  mv $PATCH $PATCH.bc
+  $DIRECT_SYM_ROOT/common-scripts/klee-opt.sh $PATCH.bc
+  sleep 1
+  $DIRECT_SYM_ROOT/common-scripts/klee-opt.sh $PATCH.bc
+  sleep 1
+  mv $PATCH.bc $PATCH
+  cd $DIRECT_SYM_ROOT/apps/git/git-$VER
+done
+

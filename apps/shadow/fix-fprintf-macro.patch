@@ -1,0 +1,11 @@
+diff -ruN shadow-4.0.3-orig/lib/prototypes.h shadow-4.0.3-modified/lib/prototypes.h
+--- shadow-4.0.3-orig/lib/prototypes.h	2000-08-26 14:27:17.000000000 -0400
++++ shadow-4.0.3-modified/lib/prototypes.h	2012-04-18 21:33:12.000000000 -0400
+@@ -225,4 +225,7 @@
+ extern char *xmalloc(size_t);
+ extern char *xstrdup(const char *);
+ 
++#undef _(str)
++#define _(str) str
++
+ #endif /* _PROTOTYPES_H */

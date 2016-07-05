@@ -1,0 +1,6 @@
+#!/bin/bash
+
+$DIRECT_SYM_ROOT/common-scripts/build-bc.sh ex1.c
+
+$DIRECT_SYM_ROOT/common-scripts/build-bc.sh ex2.c
+

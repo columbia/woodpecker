@@ -1,0 +1,114 @@
+#!/bin/bash
+
+if [ -z $1 ]; then
+        # No version number
+        echo "Usage: <version number: e.g., 2.21>"
+        exit 1
+fi
+
+VER=$1
+PROG="util-linux"
+PROG_DIR="$DIRECT_SYM_ROOT/apps/$PROG"
+
+cd $PROG_DIR
+rm *.bc *.ll
+rm -rf $PROG_DIR/$PROG-$VER
+tar zxvf $APPS_DIR/sys/$PROG-$VER.tar.gz
+cd $PROG-$VER
+mkdir obj
+cd obj
+../configure --prefix=$PWD/install --enable-static --enable-static-programs=losetup,mount,umount,fdisk,sfdisk,blkid \
+	CC=llgcc CXX=llg++ LD=llvm-ld AR=llvm-ar AS=llvm-as RANLIB=llvm-ranlib
+make
+
+# Only copy those useful utilities, skip all testing or sample programs. Totally there are 80 of them.
+cd $PROG_DIR
+cp $PROG_DIR/$PROG-$VER/obj/fdisk/sfdisk.bc .
+cp $PROG_DIR/$PROG-$VER/obj/fdisk/fdisk.bc .
+cp $PROG_DIR/$PROG-$VER/obj/fdisk/cfdisk.bc .
+cp $PROG_DIR/$PROG-$VER/obj/fsck/fsck.bc .
+cp $PROG_DIR/$PROG-$VER/obj/misc-utils/findmnt.bc .
+cp $PROG_DIR/$PROG-$VER/obj/misc-utils/mcookie.bc .
+cp $PROG_DIR/$PROG-$VER/obj/misc-utils/uuidd.bc .
+cp $PROG_DIR/$PROG-$VER/obj/misc-utils/whereis.bc .
+cp $PROG_DIR/$PROG-$VER/obj/misc-utils/namei.bc .
+cp $PROG_DIR/$PROG-$VER/obj/misc-utils/findfs.bc .
+cp $PROG_DIR/$PROG-$VER/obj/misc-utils/rename.bc .
+cp $PROG_DIR/$PROG-$VER/obj/misc-utils/logger.bc .
+cp $PROG_DIR/$PROG-$VER/obj/misc-utils/uuidgen.bc .
+cp $PROG_DIR/$PROG-$VER/obj/misc-utils/look.bc .
+cp $PROG_DIR/$PROG-$VER/obj/misc-utils/wipefs.bc .
+cp $PROG_DIR/$PROG-$VER/obj/misc-utils/cal.bc .
+cp $PROG_DIR/$PROG-$VER/obj/misc-utils/blkid.bc .
+cp $PROG_DIR/$PROG-$VER/obj/misc-utils/lsblk.bc .
+cp $PROG_DIR/$PROG-$VER/obj/hwclock/hwclock.bc .
+cp $PROG_DIR/$PROG-$VER/obj/disk-utils/blockdev.bc .
+cp $PROG_DIR/$PROG-$VER/obj/disk-utils/swaplabel.bc .
+cp $PROG_DIR/$PROG-$VER/obj/disk-utils/fsck.minix.bc .
+cp $PROG_DIR/$PROG-$VER/obj/disk-utils/mkfs.minix.bc .
+cp $PROG_DIR/$PROG-$VER/obj/disk-utils/raw.bc .
+cp $PROG_DIR/$PROG-$VER/obj/disk-utils/mkfs.bfs.bc .
+cp $PROG_DIR/$PROG-$VER/obj/disk-utils/mkswap.bc .
+cp $PROG_DIR/$PROG-$VER/obj/disk-utils/mkfs.bc .
+cp $PROG_DIR/$PROG-$VER/obj/disk-utils/fsck.cramfs.bc .
+cp $PROG_DIR/$PROG-$VER/obj/disk-utils/fdformat.bc .
+cp $PROG_DIR/$PROG-$VER/obj/disk-utils/isosize.bc .
+cp $PROG_DIR/$PROG-$VER/obj/disk-utils/mkfs.cramfs.bc .
+cp $PROG_DIR/$PROG-$VER/obj/schedutils/chrt.bc .
+cp $PROG_DIR/$PROG-$VER/obj/schedutils/ionice.bc .
+cp $PROG_DIR/$PROG-$VER/obj/schedutils/taskset.bc .
+cp $PROG_DIR/$PROG-$VER/obj/mount/umount.bc .
+cp $PROG_DIR/$PROG-$VER/obj/mount/mount.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/setarch.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/switch_root.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/mountpoint.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/unshare.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/rtcwake.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/dmesg.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/renice.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/ipcs.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/readprofile.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/ipcmk.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/ipcrm.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/swapon.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/fsfreeze.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/losetup.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/setsid.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/flock.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/ctrlaltdel.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/fstrim.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/fallocate.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/pivot_root.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/ldattach.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/lscpu.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/tunelp.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/chcpu.bc .
+cp $PROG_DIR/$PROG-$VER/obj/sys-utils/cytune.bc .
+cp $PROG_DIR/$PROG-$VER/obj/term-utils/scriptreplay.bc .
+cp $PROG_DIR/$PROG-$VER/obj/term-utils/script.bc .
+cp $PROG_DIR/$PROG-$VER/obj/term-utils/wall.bc .
+cp $PROG_DIR/$PROG-$VER/obj/term-utils/setterm.bc .
+cp $PROG_DIR/$PROG-$VER/obj/term-utils/agetty.bc .
+cp $PROG_DIR/$PROG-$VER/obj/getopt/getopt.bc .
+cp $PROG_DIR/$PROG-$VER/obj/partx/partx.bc .
+cp $PROG_DIR/$PROG-$VER/obj/partx/delpart.bc .
+cp $PROG_DIR/$PROG-$VER/obj/partx/addpart.bc .
+cp $PROG_DIR/$PROG-$VER/obj/text-utils/colrm.bc .
+cp $PROG_DIR/$PROG-$VER/obj/text-utils/rev.bc .
+cp $PROG_DIR/$PROG-$VER/obj/text-utils/column.bc .
+cp $PROG_DIR/$PROG-$VER/obj/text-utils/more.bc .
+cp $PROG_DIR/$PROG-$VER/obj/text-utils/pg.bc .
+cp $PROG_DIR/$PROG-$VER/obj/text-utils/tailf.bc .
+cp $PROG_DIR/$PROG-$VER/obj/text-utils/colcrt.bc .
+cp $PROG_DIR/$PROG-$VER/obj/text-utils/hexdump.bc .
+cp $PROG_DIR/$PROG-$VER/obj/text-utils/ul.bc .
+cp $PROG_DIR/$PROG-$VER/obj/text-utils/col.bc .
+
+# Link those bc with some uclibc libraries and pass them to KLEE optimization passes.
+ALLBC=`ls *.bc`
+for BC in $ALLBC
+do
+  echo "Optimizing $BC..."
+  $DIRECT_SYM_ROOT/common-scripts/klee-opt.sh $BC
+done
+

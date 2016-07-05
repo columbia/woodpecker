@@ -1,0 +1,27 @@
+diff -ruN git-1.7.9.4-orig/sha1_name.c git-1.7.9.4-modified/sha1_name.c
+--- git-1.7.9.4-orig/sha1_name.c	2012-03-12 19:30:26.000000000 -0400
++++ git-1.7.9.4-modified/sha1_name.c	2012-04-03 01:12:54.000000000 -0400
+@@ -292,6 +292,7 @@
+ 		ret = interpret_branch_name(str+at, &buf);
+ 		if (ret > 0) {
+ 			/* substitute this branch name and restart */
++      		abort();
+ 			return get_sha1_1(buf.buf, buf.len, sha1);
+ 		} else if (ret == 0) {
+ 			return -1;
+@@ -476,6 +477,7 @@
+ 	else
+ 		return -1;
+ 
++	abort();
+ 	if (get_sha1_1(name, sp - name - 2, outer))
+ 		return -1;
+ 
+@@ -561,6 +563,7 @@
+ 	}
+ 
+ 	if (has_suffix) {
++    	abort();
+ 		int num = 0;
+ 		int len1 = cp - name;
+ 		cp++;
